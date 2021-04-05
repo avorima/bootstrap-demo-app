@@ -1,29 +1,28 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	router := gin.Default()
-	router.Static("/assets", "./site/assets")
-	router.Static("/dist", "./site/dist")
-	router.Static("/js", "./site/js")
-	router.LoadHTMLFiles("./site/index.html")
-	router.StaticFile("/dashboard.css", "./site/dashboard.css")
+	router := newRouter()
 
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", gin.H{
 			// Template values
-			"title":   "Demo Website",
-			"version": "1",
-			"rows":    rows,
+			"title":    "Demo Website",
+			"version":  "1",
+			"rows":     rows,
+			"dateTime": time.Now().Format(time.Stamp),
 		})
 	})
 
-	router.Run(":8080")
+	router.Run(fmt.Sprintf(":%d", *port))
 }
 
 var rows = [][]string{
@@ -139,4 +138,20 @@ var rows = [][]string{
 		"in",
 		"libero",
 	},
+}
+
+var port = flag.Int("port", 8080, "port to listen on")
+
+func init() {
+	flag.Parse()
+}
+
+func newRouter() *gin.Engine {
+	router := gin.Default()
+	router.Static("/assets", "./site/assets")
+	router.Static("/dist", "./site/dist")
+	router.Static("/js", "./site/js")
+	router.StaticFile("/dashboard.css", "./site/dashboard.css")
+	router.LoadHTMLFiles("./site/index.html")
+	return router
 }
